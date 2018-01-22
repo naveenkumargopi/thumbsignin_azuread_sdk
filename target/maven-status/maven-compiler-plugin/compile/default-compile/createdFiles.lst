@@ -1,0 +1,10 @@
+com/pramati/ts/aad/util/HttpClientHelper.class
+com/pramati/ts/aad/service/AzureApiService.class
+com/pramati/ts/aad/controller/AzureApiController.class
+com/pramati/ts/aad/util/JSONHelper.class
+com/pramati/ts/aad/controller/ThumbsigninApiController.class
+com/pramati/ts/aad/domain/DirectoryObject.class
+com/pramati/ts/aad/domain/Membership.class
+com/pramati/ts/aad/security/hmac/HmacSignatureBuilder$1.class
+com/pramati/ts/aad/domain/User.class
+com/pramati/ts/aad/controller/HomeController.class
