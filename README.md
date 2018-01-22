@@ -1,0 +1,1 @@
+This is REST web service application developed on Spring Boot. The purpose of this application is to help integrate Thumbsignin with applications which are using Azure Active Directory for authentication & authorization purposes.
