@@ -6,7 +6,7 @@
 	<groupId>com.pramati.ts.aad</groupId>
 	<artifactId>azuread-thumbsignin-integration-saas</artifactId>
 	<version>1.0-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 
 	<name>azuread-thumbsignin-integration-saas</name>
 	<description>Spring Boot REST web service for Thumbsignin integration with Azure AD</description>
