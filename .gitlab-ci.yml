@@ -9,7 +9,7 @@ build-faas-uaf:
     before_script:
     script:
       - cd $HOME/thumbsignIn-server-sdk
-      - ./gradle publishToMavenLocal
+      - gradle publishToMavenLocal
       - mkdir -p $HOME/azuread-thumbsignin-integration-saas/build_$CI_COMMIT_REF_NAME
       - cd $CI_PROJECT_DIR
       - pwd
