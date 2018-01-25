@@ -1,0 +1,17 @@
+after_script:
+  - $HOME/azuread-work/azuread-thumbsignin-integration-saas-$CI_COMMIT_REF_NAME.sh
+
+stages:
+  - build
+
+build-faas-uaf:
+    stage: build
+    before_script:
+    script:
+      - mkdir -p $HOME/azuread-work/build_$CI_COMMIT_REF_NAME
+      - cd $CI_PROJECT_DIR
+      - pwd
+      - mvn clean install 
+      - cp target/*.jar $HOME/azuread-work/build_$CI_COMMIT_REF_NAME/
+    only:
+      - master
