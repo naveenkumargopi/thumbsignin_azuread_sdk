@@ -1,5 +1,6 @@
 package com.pramati.ts.aad.service;
 
+import java.io.FileNotFoundException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ public class AzureApiService {
 	
 	@Value("${azure.ad.graph.api.endpoint}")
     private String azureGraphApiEndpoint;
+	
+	private static final String USER_NOT_FOUND_IN_AZURE_AD = "userRemovedFromAzureAD";
 	
 	private String acquireAccessTokenForClientApp() {
     	String accessToken = "";
@@ -83,6 +86,9 @@ public class AzureApiService {
                 listOfUserMemberships.add(membership);
             }
     	}
+    	catch (FileNotFoundException e) {
+    		return null;
+    	}
     	catch (Exception e)
     	{
     		System.out.println(e.getMessage());
@@ -108,6 +114,9 @@ public class AzureApiService {
             JSONObject response = HttpClientHelper.processGoodRespStr(responseCode, responseStr);
             JSONObject userJsonObj = JSONHelper.fetchDirectoryObjectJSONObject(response);
             JSONHelper.convertJSONObjectToDirectoryObject(userJsonObj, user);
+    	}
+    	catch (FileNotFoundException e) {
+    		return USER_NOT_FOUND_IN_AZURE_AD;
     	}
     	catch (Exception e)
     	{

@@ -21,18 +21,15 @@ import com.pramati.ts.aad.domain.Membership;
 
 @Service
 public class ThumbsigninApiService {
-	
-	@Value("${thumbsignin.api.key}")
-    private String tsApiKey;
-	
-	@Value("${thumbsignin.api.secret}")
-    private String tsApiSecret;
-	
+		
 	@Value("${client.authenticationSuccess.redirect.url}")
     private String authSuccessClientRedirectUrl;
 	
 	@Value("${client.registrationSuccess.redirect.url}")
     private String registrationSuccessClientRedirectUrl;
+	
+	@Value("${client.accessDenied.redirect.url}")
+    private String accessDeniedClientRedirectUrl;
 	
 	@Autowired
 	private AzureApiService azureApiService;
@@ -51,6 +48,8 @@ public class ThumbsigninApiService {
 	
 	private static final String CANCELLED = "cancelled";
 	
+	private static final String USER_NOT_FOUND_IN_AZURE_AD = "userRemovedFromAzureAD";
+	
 	private final ThumbsignInClient thumbsignInClient;
 
     public ThumbsigninApiService() {
@@ -61,13 +60,13 @@ public class ThumbsigninApiService {
         this.thumbsignInClient = thumbsignInClient;
     }
 	
-    private void initializeThumbSignInClient() {
+    private void initializeThumbSignInClient(String tsApiKey, String tsApiSecret) {
     	thumbsignInClient.setApiKey(tsApiKey);
     	thumbsignInClient.setApiSecret(tsApiSecret);
     }
     
-	public String processThumbsigninRequest(HttpServletRequest servletRequest) throws IOException {
-		initializeThumbSignInClient();
+	public String processThumbsigninRequest(HttpServletRequest servletRequest, String tsApiKey, String tsApiSecret) throws IOException {
+		initializeThumbSignInClient(tsApiKey, tsApiSecret);
 		ThumbsignInRequest thumbsignInRequest = createThumbsignInRequest(servletRequest);
 		ThumbsignInResponse thumbsignInResponse = thumbsignInClient.get(thumbsignInRequest);
 		processResponse(thumbsignInRequest, thumbsignInResponse, servletRequest);
@@ -127,11 +126,16 @@ public class ThumbsigninApiService {
     			if (statusRequestType.equals(AUTHENTICATION_STATUS)) {
     				listOfUserMemberships = azureApiService.getUserMembershipInfoFromGraph(thumbsignin_UserId);
     				userName = azureApiService.getUserNameByIdFromGraph(thumbsignin_UserId);
-    				thumbsignInResponse.getData().put("userId", thumbsignin_UserId);
-    				thumbsignInResponse.getData().put("userRolesFromAzure", listOfUserMemberships);
-    				thumbsignInResponse.getData().put("userNameFromAzure", userName);
-    				thumbsignInResponse.getData().put(REDIRECT_URL, authSuccessClientRedirectUrl);
-    				//thumbsignInResponse.getData().put(REDIRECT_URL, authSuccessClientRedirectUrl.replace(USER_ID_QUERY_PARAM, thumbsignin_UserId));
+    				if (listOfUserMemberships == null || userName.equals(USER_NOT_FOUND_IN_AZURE_AD)) {
+    					thumbsignInResponse.getData().put(USER_NOT_FOUND_IN_AZURE_AD, true);
+    					thumbsignInResponse.getData().put(REDIRECT_URL, accessDeniedClientRedirectUrl);
+    				} else {
+    					thumbsignInResponse.getData().put("userId", thumbsignin_UserId);
+        				thumbsignInResponse.getData().put("userRolesFromAzure", listOfUserMemberships);
+        				thumbsignInResponse.getData().put("userNameFromAzure", userName);
+        				thumbsignInResponse.getData().put(REDIRECT_URL, authSuccessClientRedirectUrl);
+        				//thumbsignInResponse.getData().put(REDIRECT_URL, authSuccessClientRedirectUrl.replace(USER_ID_QUERY_PARAM, thumbsignin_UserId));
+    				}    				
     			} else {
     				thumbsignInResponse.getData().put(REDIRECT_URL, registrationSuccessClientRedirectUrl);
     			}

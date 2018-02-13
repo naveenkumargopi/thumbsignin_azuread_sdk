@@ -7,9 +7,13 @@ import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
+
+import com.pramati.ts.aad.config.ThumbSigninProperties;
+import com.pramati.ts.aad.config.ThumbSigninProperties.ApiUser;
 
 /**
  * Class HmacVerifier.
@@ -22,10 +26,14 @@ public class HmacVerifier {
 
     //private static final Logger log = LoggerFactory.getLogger(HmacVerifier.class);
 	
-	@Value("${thumbsignin.api.secret}")
-    private String thumbsigninApiSecret;
+	@Autowired
+	private ThumbSigninProperties thumbSigninProperties;
 
-    public AuthenticationHeader verify(CachingRequestWrapper requestWrapper/*, CredentialsProvider credentialsProvider*/) throws IOException {
+    public ThumbSigninProperties getThumbSigninProperties() {
+		return thumbSigninProperties;
+	}
+
+	public AuthenticationHeader verify(CachingRequestWrapper requestWrapper/*, CredentialsProvider credentialsProvider*/) throws IOException {
         final AuthenticationHeader authHeader = AuthenticationHeaderParser.getAuthHeader(requestWrapper);
 
         if (authHeader == null) {
@@ -36,7 +44,13 @@ public class HmacVerifier {
         String dateHeader = requestWrapper.getHeader(HmacSignatureBuilder.X_TS_DATE_HEADER);
 
         //String apiSecret = credentialsProvider.getApiSecret(authHeader.getApiKey());
-        String apiSecret = thumbsigninApiSecret;
+        String apiSecret = "";
+        for (ApiUser apiUser : thumbSigninProperties.getApiUsers()) {
+        	if (apiUser.getKey().equals(authHeader.getApiKey())) {
+        		apiSecret = apiUser.getSecret();
+        		break;
+        	}
+        }
 
         final HmacSignatureBuilder signatureBuilder = new HmacSignatureBuilder.Builder(authHeader.getApiKey(), apiSecret).algorithm(authHeader.getAlgorithm())
                 .scheme(requestWrapper.getScheme())
